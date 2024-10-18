@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        registryCredential = 'ecr:us-east-1:aws_credentials'
+        registryCredential = 'aws_credentials'
         appRegistry = '637423230477.dkr.ecr.us-east-1.amazonaws.com/vulnerable_node_app'
         registry = 'https://637423230477.dkr.ecr.us-east-1.amazonaws.com'
     }
