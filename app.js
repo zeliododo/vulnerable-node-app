@@ -63,7 +63,7 @@ app.get('/api/hostinfo', (req, res) => {
 // Vulnerable login route (SQL Injection)
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  // Vulnerable query - DO NOT USE THIS IN PRODUCTION
+  // Vulnerable query
   const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
   
   db.get(query, (err, row) => {
@@ -80,7 +80,7 @@ app.post('/api/login', (req, res) => {
 // Vulnerable data retrieval route (Insecure Direct Object Reference)
 app.get('/api/user/:id', (req, res) => {
   const userId = req.params.id;
-  // Vulnerable query - DO NOT USE THIS IN PRODUCTION
+  // Vulnerable query
   const query = `SELECT * FROM users WHERE id = ${userId}`;
   
   db.get(query, (err, row) => {
