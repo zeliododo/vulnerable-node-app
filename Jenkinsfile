@@ -16,9 +16,10 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                echo 'Running tests...'
+        stage('SonarQube Analysis') {
+            def scannerHome = tool 'sonarqube_server';
+            withSonarQubeEnv() {
+                sh "${scannerHome}/bin/sonar-scanner"
             }
         }
         
@@ -41,7 +42,6 @@ pipeline {
         stage('Tag & Push Docker Image') {
             steps {
                 script {
-                    // Push the tagged image
                     dockerImage.push("${BUILD_NUMBER}")
                     dockerImage.push('latest')
                 }
