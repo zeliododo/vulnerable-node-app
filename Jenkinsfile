@@ -45,7 +45,7 @@ pipeline {
 
         stage('Trivy Vulnerability Scan') {
             steps {
-                sh "trivy image -f json -o image_scan_${BUILD_NUMBER}.json ${REGISTRY}:${BUILD_NUMBER}"
+                sh "trivy image --skip-db-update -f json -o image_scan_${BUILD_NUMBER}.json ${REGISTRY}:${BUILD_NUMBER}"
             }
         }
 
