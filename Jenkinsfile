@@ -45,7 +45,7 @@ pipeline {
 
         stage('Trivy Vulnerability Scan') {
             steps {
-                sh "trivy image --scanners vuln --severity HIGH,CRITICAL -f json -o image_scan_${BUILD_NUMBER}.json ${REGISTRY}:${BUILD_NUMBER}"
+                sh "trivy image --scanners vuln --severity HIGH,CRITICAL ${REGISTRY}:${BUILD_NUMBER} > report.txt"
             }
         }
 
