@@ -16,14 +16,14 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Run Sonarqube') {
+            environment {
+                scannerHome = tool 'sonarqube_tool';
+            }
             steps {
-                script {
-                    def scannerHome = tool 'sonarqube_server'
-                    withSonarQubeEnv() {
-                        sh "${scannerHome}/bin/sonar-scanner"
-                    }
-                }
+              withSonarQubeEnv(credentialsId: 'jenkins_token', installationName: 'sonarqube_server') {
+                sh "${scannerHome}/bin/sonar-scanner"
+              }
             }
         }
         
