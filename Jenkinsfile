@@ -43,6 +43,12 @@ pipeline {
             }
         }
 
+        stage('Trivy Vulnerability Scan') {
+            steps {
+                sh "trivy image -f json -o image_scan_${BUILD_NUMBER}.json ${REGISTRY}:${BUILD_NUMBER}"
+            }
+        }
+
         stage('Login to AWS ECR') {
             steps {
                 script {
