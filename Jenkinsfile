@@ -48,7 +48,7 @@ pipeline {
 
         stage('OWASP Checking') {
             steps {
-                nodejs(nodeJSInstallationName: 'NodeJS') {
+                nodejs(nodeJSInstallationName: 'Nodejs') {
                     sh 'npm audit -j > node_audit.json || true'
                 }
                 dependencyCheck additionalArguments: '''
