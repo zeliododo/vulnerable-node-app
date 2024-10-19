@@ -48,16 +48,11 @@ pipeline {
 
         stage('OWASP Checking') {
             steps {
-                nodejs(nodeJSInstallationName: 'Nodejs') {
-                    sh 'npm audit -j > node_audit.json || true'
-                }
                 dependencyCheck additionalArguments: '''
                     -o './'
                     -s './'
                     -f 'ALL'
-                    --prettyPrint
-                    --nodePackageFile package.json
-                    --nodeAuditJsonFile node_audit.json''', odcInstallation: 'owasp_dpcheck'
+                    --prettyPrint''', odcInstallation: 'owasp_dpcheck'
                 
                 dependencyCheckPublisher pattern: 'dependency-check-report.xml'
             }
