@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools{
+        nodejs 'Nodejs'
+    }
 
     environment {
         AWS_DEFAULT_REGION = 'us-east-1'
@@ -13,6 +16,14 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/zeliododo/vulnerable-node-app.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                nodejs(nodeJSInstallationName: 'Nodejs') {
+                    sh 'npm install'
+                }
             }
         }
 
@@ -37,12 +48,17 @@ pipeline {
 
         stage('OWASP Checking') {
             steps {
-                dependencyCheck additionalArguments: ''' 
-                        -o './'
-                        -s './'
-                        -f 'ALL' 
-                        --prettyPrint''', odcInstallation: 'owasp_dpcheck'
-            
+                nodejs(nodeJSInstallationName: 'NodeJS') {
+                    sh 'npm audit -j > node_audit.json || true'
+                }
+                dependencyCheck additionalArguments: '''
+                    -o './'
+                    -s './'
+                    -f 'ALL'
+                    --prettyPrint
+                    --nodePackageFile package.json
+                    --nodeAuditJsonFile node_audit.json''', odcInstallation: 'owasp_dpcheck'
+                
                 dependencyCheckPublisher pattern: 'dependency-check-report.xml'
             }
         }
