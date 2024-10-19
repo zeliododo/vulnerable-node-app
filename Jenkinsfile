@@ -34,6 +34,18 @@ pipeline {
                 }
             }
         }
+
+        stage('OWASP Dependency-Check Vulnerabilities') {
+            steps {
+                dependencyCheck additionalArguments: ''' 
+                        -o './'
+                        -s './'
+                        -f 'ALL' 
+                        --prettyPrint''', odcInstallation: 'owasp_dpcheck'
+            
+                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+            }
+        }
         
         stage('Build Docker Image') {
             steps {
@@ -68,7 +80,10 @@ pipeline {
         
         stage('Clean Up') {
             steps {
-                sh 'docker rmi ${IMAGE_TAG}'
+                script {
+                    sh 'docker rmi ${IMAGE_TAG}'
+                    sh 'rm report.txt'
+                }
             }
         }
     }
