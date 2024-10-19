@@ -10,9 +10,6 @@ COPY package*.json ./
 # Install the application dependencies
 RUN npm install
 
-# Intentionally install a vulnerable package
-RUN npm install lodash@4.17.20
-
 # Copy the rest of the application code
 COPY . .
 
