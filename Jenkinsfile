@@ -89,7 +89,7 @@ pipeline {
             }
         }
         
-        stage('Clean Up') {
+        stage('Clean Up Shits') {
             steps {
                 script {
                     sh 'docker rmi ${IMAGE_TAG}'
