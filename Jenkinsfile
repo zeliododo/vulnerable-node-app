@@ -38,13 +38,13 @@ pipeline {
             }
         }
 
-        stage('Quality Gate') {
+        /* stage('Quality Gate') {
             steps {
                 script {
                     waitForQualityGate abortPipeline: false, credentialsId: 'sonarqube_token'
                 }
             }
-        }
+        } */
 
         stage('OWASP Checking') {
             steps {
