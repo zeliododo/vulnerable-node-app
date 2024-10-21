@@ -122,6 +122,24 @@ pipeline {
             }     
         }
 
+        stage ("Docker Pull Dastardly from Burp Suite container image") {
+            steps {
+                sh 'docker pull public.ecr.aws/portswigger/dastardly:latest'
+            }
+        }
+
+        stage ("Docker run Dastardly from Burp Suite Scan") {
+            steps {
+                cleanWs()
+                sh '''
+                    docker run --user $(id -u) -v ${WORKSPACE}:${WORKSPACE}:rw \
+                    -e BURP_START_URL=http://a7042e445de634b90894d0b193d8a1ee-1439731728.us-east-1.elb.amazonaws.com/ \
+                    -e BURP_REPORT_FILE_PATH=${WORKSPACE}/dastardly-report.xml \
+                    public.ecr.aws/portswigger/dastardly:latest
+                '''
+            }
+        }
+
         stage('Clean Up') {
             steps {
                 script {
@@ -132,26 +150,8 @@ pipeline {
     }
 
     post {
-        success {
-            emailext(
-                subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: "Good news! Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' succeeded.",
-                attachmentsPattern: 'report.txt',
-                to: 'zeliododo0815@gmail.com'              
-            )
-
-            sh 'rm -f report.txt'
-        }
-        failure {
-            emailext(
-                subject: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: "Unfortunately, Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' failed. Please check the logs.",
-                attachmentsPattern: 'report.txt',
-                attachLog: true,
-                to: 'zeliododo0815@gmail.com'
-            )
-
-            sh 'rm -f report.txt'
+        always {
+            junit testResults: 'dastardly-report.xml', skipPublishingChecks: true
         }
     }
 }
