@@ -139,19 +139,28 @@ pipeline {
                 '''
             }
         }
-
-        stage('Clean Up') {
-            steps {
-                script {
-                    sh 'docker rmi ${IMAGE_TAG}'
-                }
-            }
-        }
     }
 
     post {
         always {
             junit testResults: 'dastardly-report.xml', skipPublishingChecks: true
+            sh 'docker rmi ${IMAGE_TAG}'
         }
+        failure {
+            emailext(
+                subject: "${JOB_NAME}.${BUILD_NUMBER} FAILED",
+                mimeType: 'text/html',
+                to: "zelio@nexthope.net",
+                body: "${JOB_NAME}.${BUILD_NUMBER} FAILED"
+            )    
+        }
+        success {
+            emailext(
+                subject: "${JOB_NAME}.${BUILD_NUMBER} PASSED",
+                mimeType: 'text/html',
+                to: "zelio@nexthope.net",
+                body: "${JOB_NAME}.${BUILD_NUMBER} PASSED"
+            )
+        }    
     }
 }
