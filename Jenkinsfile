@@ -107,7 +107,7 @@ pipeline {
         stage('Update Deployment File') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'TOKEN')]) {
 
                         sh "sed -i 's|image: .*|image: $IMAGE_TAG|' prod/deployment.yml"
 
@@ -116,7 +116,7 @@ pipeline {
 
                         sh 'git add .'
                         sh "git commit -m 'Update deployment image to $IMAGE_TAG'"
-                        sh "git push https://$GITHUB_TOKEN@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git"
+                        sh "git push https://$TOKEN@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git"
                     }
                 }
             }     
