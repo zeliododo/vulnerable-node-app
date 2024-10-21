@@ -10,6 +10,8 @@ pipeline {
         REGISTRY = '637423230477.dkr.ecr.us-east-1.amazonaws.com/vulnerable_node_app'
         IMAGE_TAG = "${REGISTRY}:${BUILD_NUMBER}"
         ECR_LOGIN_COMMAND = 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URL}'
+        GIT_REPO_NAME = "manifest-repo"
+        GIT_USER_NAME = "zeliododo"
     }
     
     stages {
@@ -95,7 +97,31 @@ pipeline {
                 }
             }
         }
-        
+
+        stage('Checkout Manifest Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git'
+            }
+        }
+
+        stage('Update Deployment File') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+
+                        sh "sed -i 's|image: .*|image: $IMAGE_TAG|' prod/deployment.yml"
+
+                        sh 'git config user.name "zeliododo"'
+                        sh 'git config user.email "zeliododo0815@gmail.com"'
+
+                        sh 'git add .'
+                        sh "git commit -m 'Update deployment image to $IMAGE_TAG'"
+                        sh 'git push https://$GITHUB_TOKEN@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git"'
+                    }
+                }
+            }     
+        }
+
         stage('Clean Up') {
             steps {
                 script {
