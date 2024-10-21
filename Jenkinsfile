@@ -89,13 +89,36 @@ pipeline {
             }
         }
         
-        stage('Clean Up Shits') {
+        stage('Clean Up') {
             steps {
                 script {
                     sh 'docker rmi ${IMAGE_TAG}'
-                    sh 'rm report.txt'
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            emailext(
+                subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: "Good news! Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' succeeded.",
+                to: 'zelio@nexthope.net',
+                attachmentsPattern: 'report.txt'
+            )
+
+            sh 'rm -f report.txt'
+        }
+        failure {
+            emailext(
+                subject: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: "Unfortunately, Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' failed. Please check the logs.",
+                to: 'zelio@nexthope.net',
+                attachmentsPattern: 'report.txt',
+                attachLog: true
+            )
+
+            sh 'rm -f report.txt'
         }
     }
 }
