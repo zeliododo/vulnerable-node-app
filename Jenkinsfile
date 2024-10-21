@@ -114,7 +114,7 @@ pipeline {
                         sh 'git config user.name "zeliododo"'
                         sh 'git config user.email "zeliododo0815@gmail.com"'
 
-                        sh 'git add .'
+                        sh 'git add prod/deployement.yaml'
                         sh "git commit -m 'Update deployment image to $IMAGE_TAG'"
                         sh "git push https://$TOKEN@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git"
                     }
