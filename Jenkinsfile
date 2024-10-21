@@ -109,7 +109,7 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'TOKEN')]) {
 
-                        sh "sed -i 's|image: .*|image: $IMAGE_TAG|' prod/deployment.yml"
+                        sh "sed -i 's|image: .*|image: $IMAGE_TAG|' prod/deployement.yaml"
 
                         sh 'git config user.name "zeliododo"'
                         sh 'git config user.email "zeliododo0815@gmail.com"'
