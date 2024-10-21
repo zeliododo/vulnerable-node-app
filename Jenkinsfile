@@ -104,7 +104,7 @@ pipeline {
                 subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: "Good news! Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' succeeded.",
                 attachmentsPattern: 'report.txt',
-                to: 'zelio@nexthope.net'              
+                to: 'zeliododo0815@gmail.com'              
             )
 
             sh 'rm -f report.txt'
@@ -115,7 +115,7 @@ pipeline {
                 body: "Unfortunately, Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' failed. Please check the logs.",
                 attachmentsPattern: 'report.txt',
                 attachLog: true,
-                to: 'zelio@nexthope.net'
+                to: 'zeliododo0815@gmail.com'
             )
 
             sh 'rm -f report.txt'
