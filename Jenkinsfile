@@ -103,8 +103,8 @@ pipeline {
             emailext(
                 subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: "Good news! Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' succeeded.",
-                to: 'zelio@nexthope.net',
-                attachmentsPattern: 'report.txt'
+                attachmentsPattern: 'report.txt',
+                to: 'zelio@nexthope.net'              
             )
 
             sh 'rm -f report.txt'
@@ -113,9 +113,9 @@ pipeline {
             emailext(
                 subject: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: "Unfortunately, Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' failed. Please check the logs.",
-                to: 'zelio@nexthope.net',
                 attachmentsPattern: 'report.txt',
-                attachLog: true
+                attachLog: true,
+                to: 'zelio@nexthope.net'
             )
 
             sh 'rm -f report.txt'
