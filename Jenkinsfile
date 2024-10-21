@@ -100,7 +100,7 @@ pipeline {
 
         stage('Checkout Manifest Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git'
+                git branch: 'main', url: "https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git"
             }
         }
 
@@ -116,7 +116,7 @@ pipeline {
 
                         sh 'git add .'
                         sh "git commit -m 'Update deployment image to $IMAGE_TAG'"
-                        sh 'git push https://$GITHUB_TOKEN@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git"'
+                        sh "git push https://$GITHUB_TOKEN@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git"
                     }
                 }
             }     
