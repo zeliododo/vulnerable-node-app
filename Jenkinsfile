@@ -77,12 +77,12 @@ pipeline {
                 }
 
                 stage('Snyk Scans') {
-                    parallel {
+                    stages {
                         stage('Dependencies (SCA)') {
                             steps {
                                 script {
                                     def result = sh(
-                                        script: 'snyk test --all-projects --org=zeliododo0815 --report --severity-threshold=critical',
+                                        script: 'snyk test --all-projects --org=zeliododo0815 --project-name=vulnerable-node-app-sca --report --severity-threshold=critical',
                                         returnStatus: true
                                     )
                                     if (result == 1) {
@@ -95,7 +95,7 @@ pipeline {
                             steps {
                                 script {
                                     def result = sh(
-                                        script: 'snyk code test --org=zeliododo0815 --report --severity-threshold=high',
+                                        script: 'snyk code test --org=zeliododo0815 --project-name=vulnerable-node-app-sast --report --severity-threshold=high',
                                         returnStatus: true
                                     )
                                     if (result == 1) {
@@ -117,7 +117,7 @@ pipeline {
                             dockerImage = docker.build("${REGISTRY}:${BUILD_NUMBER}", ".")
                             
                             def scanResult = sh(
-                                script: "snyk container test ${IMAGE_TAG} --org=zeliododo0815 --report --severity-threshold=critical",
+                                script: "snyk container test ${IMAGE_TAG} --org=zeliododo0815 --project-name=vulnerable-node-app-image --report --severity-threshold=critical",
                                 returnStatus: true
                             )
                             if (scanResult == 1) {
