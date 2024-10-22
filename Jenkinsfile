@@ -158,21 +158,73 @@ pipeline {
         failure {
             emailext(
                 to: "zelio@nexthope.net",
-                subject: "<span style='color:green;'>${JOB_NAME} Build #${BUILD_NUMBER} - SUCCESS</span>",
+                subject: "${JOB_NAME} - Build #${BUILD_NUMBER} - Security Scan Results",
                 mimeType: 'text/html',
                 body: """
                     <html>
-                    <body>
-                        <h2 style="color: green;">SUCCESS</h2>
-                        <p>The Jenkins build <strong>${JOB_NAME} #${BUILD_NUMBER}</strong> was successful.</p>
-                        <p><a href="${BUILD_URL}">Click here</a> to view the job details in Jenkins Blue Ocean.</p>
-                        <p>For more information, please refer to the attached <strong>Trivy report</strong>.</p>
-                    </body>
+                        <head>
+                            <style>
+                                body { 
+                                    font-family: Arial, sans-serif;
+                                    line-height: 1.6;
+                                    color: #333;
+                                    padding: 20px;
+                                }
+                                .header {
+                                    background-color: #28A745; /* Green for success */
+                                    color: white;
+                                    padding: 15px;
+                                    border-radius: 5px;
+                                    margin-bottom: 20px;
+                                }
+                                .content {
+                                    background-color: #f8f9fa;
+                                    padding: 20px;
+                                    border-radius: 5px;
+                                    border: 1px solid #ddd;
+                                }
+                                .button {
+                                    background-color: #007bff;
+                                    color: white;
+                                    padding: 10px 20px;
+                                    text-decoration: none;
+                                    border-radius: 5px;
+                                    display: inline-block;
+                                    margin: 10px 0;
+                                }
+                                .footer {
+                                    margin-top: 20px;
+                                    font-size: 12px;
+                                    color: #666;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h2>✅ Build Success</h2>
+                            </div>
+                            <div class="content">
+                                <h3>Build Information:</h3>
+                                <ul>
+                                    <li><strong>Job Name:</strong> ${JOB_NAME}</li>
+                                    <li><strong>Build Number:</strong> #${BUILD_NUMBER}</li>
+                                    <li><strong>Status:</strong> SUCCESS</li>
+                                </ul>
+                                
+                                <p>No critical security vulnerabilities were found. You can review the details of the scan in the attached Trivy report.</p>
+                                
+                                <a href="${BUILD_URL}" class="button">View Build Details</a>
+                                
+                                <div class="footer">
+                                    <p>This is an automated message from Jenkins. Please do not reply to this email.</p>
+                                </div>
+                            </div>
+                        </body>
                     </html>
                 """,
                 attachLog: true,
                 attachmentsPattern: 'report.txt'
-            )    
+            )
         }
         success {
             emailext(
