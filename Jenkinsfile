@@ -81,8 +81,9 @@ pipeline {
                         stage('Dependencies (SCA)') {
                             steps {
                                 script {
+                                    sh "ls -al"
                                     def result = sh(
-                                        script: 'snyk test --all-projects --org=zeliododo0815 --project-name=vulnerable-node-app-sca --report --severity-threshold=critical',
+                                        script: 'snyk test --json | snyk-to-html -o sca-result.html',
                                         returnStatus: true
                                     )
                                     if (result == 1) {
@@ -95,7 +96,7 @@ pipeline {
                             steps {
                                 script {
                                     def result = sh(
-                                        script: 'snyk code test --org=zeliododo0815 --project-name=vulnerable-node-app-sast --report --severity-threshold=high',
+                                        script: 'snyk code test --json | snyk-to-html -o sast-result.html',
                                         returnStatus: true
                                     )
                                     if (result == 1) {
@@ -117,7 +118,7 @@ pipeline {
                             dockerImage = docker.build("${REGISTRY}:${BUILD_NUMBER}", ".")
                             
                             def scanResult = sh(
-                                script: "snyk container test ${IMAGE_TAG} --org=zeliododo0815 --project-name=vulnerable-node-app-image --report --severity-threshold=critical",
+                                script: "snyk container test ${IMAGE_TAG} --json | snyk-to-html -o container-scan-result.html",
                                 returnStatus: true
                             )
                             if (scanResult == 1) {
@@ -216,6 +217,7 @@ pipeline {
                     </html>
                 ''',
                 attachLog: true,
+                attachmentsPattern: 'sca-result.html, sast-result.html, container-scan-result.html'
             )
         }
         
@@ -256,6 +258,7 @@ pipeline {
                     </html>
                 ''',
                 attachLog: true,
+                attachmentsPattern: 'sca-result.html, sast-result.html, container-scan-result.html'
             )
         }
     }
