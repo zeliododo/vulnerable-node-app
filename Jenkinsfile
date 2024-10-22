@@ -150,151 +150,152 @@ pipeline {
         }
     }
 
-post {
-    always {
-        junit testResults: 'dastardly-report.xml', skipPublishingChecks: true
-        sh 'docker rmi ${IMAGE_TAG}'
-    }
-    failure {
-        emailext(
-            to: "zelio@nexthope.net",
-            subject: "${JOB_NAME} - Build #${BUILD_NUMBER} - Security Scan Results",
-            mimeType: 'text/html',
-            body: """
-                <html>
-                    <head>
-                        <style>
-                            body { 
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                                padding: 20px;
-                            }
-                            .header {
-                                background-color: #DC3545; /* Red for failure */
-                                color: white;
-                                padding: 15px;
-                                border-radius: 5px;
-                                margin-bottom: 20px;
-                            }
-                            .content {
-                                background-color: #f8f9fa;
-                                padding: 20px;
-                                border-radius: 5px;
-                                border: 1px solid #ddd;
-                            }
-                            .button {
-                                background-color: #007bff;
-                                color: white;
-                                padding: 10px 20px;
-                                text-decoration: none;
-                                border-radius: 5px;
-                                display: inline-block;
-                                margin: 10px 0;
-                            }
-                            .footer {
-                                margin-top: 20px;
-                                font-size: 12px;
-                                color: #666;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="header">
-                            <h2>⚠️ Build Failure Alert</h2>
-                        </div>
-                        <div class="content">
-                            <h3>Build Information:</h3>
-                            <ul>
-                                <li><strong>Job Name:</strong> ${JOB_NAME}</li>
-                                <li><strong>Build Number:</strong> #${BUILD_NUMBER}</li>
-                                <li><strong>Status:</strong> FAILED</li>
-                            </ul>
-                            
-                            <p>Security vulnerabilities have been detected in your build. Please review the attached Trivy report for details.</p>
-                            
-                            <a href="${BUILD_URL}" class="button">View Build Details</a>
-                            
-                            <div class="footer">
-                                <p>This is an automated message from Jenkins. Please do not reply to this email.</p>
+    post {
+        always {
+            junit testResults: 'dastardly-report.xml', skipPublishingChecks: true
+            sh 'docker rmi ${IMAGE_TAG}'
+        }
+        failure {
+            emailext(
+                to: "zelio@nexthope.net",
+                subject: "${JOB_NAME} - Build #${BUILD_NUMBER} - Security Scan Results",
+                mimeType: 'text/html',
+                body: """
+                    <html>
+                        <head>
+                            <style>
+                                body { 
+                                    font-family: Arial, sans-serif;
+                                    line-height: 1.6;
+                                    color: #333;
+                                    padding: 20px;
+                                }
+                                .header {
+                                    background-color: #DC3545; /* Red for failure */
+                                    color: white;
+                                    padding: 15px;
+                                    border-radius: 5px;
+                                    margin-bottom: 20px;
+                                }
+                                .content {
+                                    background-color: #f8f9fa;
+                                    padding: 20px;
+                                    border-radius: 5px;
+                                    border: 1px solid #ddd;
+                                }
+                                .button {
+                                    background-color: #007bff;
+                                    color: white;
+                                    padding: 10px 20px;
+                                    text-decoration: none;
+                                    border-radius: 5px;
+                                    display: inline-block;
+                                    margin: 10px 0;
+                                }
+                                .footer {
+                                    margin-top: 20px;
+                                    font-size: 12px;
+                                    color: #666;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h2>⚠️ Build Failure Alert</h2>
                             </div>
-                        </div>
-                    </body>
-                </html>
-            """,
-            attachLog: true,
-            attachmentsPattern: 'report.txt'
-        )
-    }
-    success {
-        emailext(
-            to: "zelio@nexthope.net",
-            subject: "${JOB_NAME} - Build #${BUILD_NUMBER} - Security Scan Results",
-            mimeType: 'text/html',
-            body: """
-                <html>
-                    <head>
-                        <style>
-                            body { 
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                                padding: 20px;
-                            }
-                            .header {
-                                background-color: #28A745; /* Green for success */
-                                color: white;
-                                padding: 15px;
-                                border-radius: 5px;
-                                margin-bottom: 20px;
-                            }
-                            .content {
-                                background-color: #f8f9fa;
-                                padding: 20px;
-                                border-radius: 5px;
-                                border: 1px solid #ddd;
-                            }
-                            .button {
-                                background-color: #007bff;
-                                color: white;
-                                padding: 10px 20px;
-                                text-decoration: none;
-                                border-radius: 5px;
-                                display: inline-block;
-                                margin: 10px 0;
-                            }
-                            .footer {
-                                margin-top: 20px;
-                                font-size: 12px;
-                                color: #666;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="header">
-                            <h2>✅ Build Success</h2>
-                        </div>
-                        <div class="content">
-                            <h3>Build Information:</h3>
-                            <ul>
-                                <li><strong>Job Name:</strong> ${JOB_NAME}</li>
-                                <li><strong>Build Number:</strong> #${BUILD_NUMBER}</li>
-                                <li><strong>Status:</strong> SUCCESS</li>
-                            </ul>
-                            
-                            <p>No critical security vulnerabilities were found. You can review the details of the scan in the attached Trivy report.</p>
-                            
-                            <a href="${BUILD_URL}" class="button">View Build Details</a>
-                            
-                            <div class="footer">
-                                <p>This is an automated message from Jenkins. Please do not reply to this email.</p>
+                            <div class="content">
+                                <h3>Build Information:</h3>
+                                <ul>
+                                    <li><strong>Job Name:</strong> ${JOB_NAME}</li>
+                                    <li><strong>Build Number:</strong> #${BUILD_NUMBER}</li>
+                                    <li><strong>Status:</strong> FAILED</li>
+                                </ul>
+                                
+                                <p>Security vulnerabilities have been detected in your build. Please review the attached Trivy report for details.</p>
+                                
+                                <a href="${BUILD_URL}" class="button">View Build Details</a>
+                                
+                                <div class="footer">
+                                    <p>This is an automated message from Jenkins. Please do not reply to this email.</p>
+                                </div>
                             </div>
-                        </div>
-                    </body>
-                </html>
-            """,
-            attachLog: true,
-            attachmentsPattern: 'report.txt'
-        )
+                        </body>
+                    </html>
+                """,
+                attachLog: true,
+                attachmentsPattern: 'report.txt'
+            )
+        }
+        success {
+            emailext(
+                to: "zelio@nexthope.net",
+                subject: "${JOB_NAME} - Build #${BUILD_NUMBER} - Security Scan Results",
+                mimeType: 'text/html',
+                body: """
+                    <html>
+                        <head>
+                            <style>
+                                body { 
+                                    font-family: Arial, sans-serif;
+                                    line-height: 1.6;
+                                    color: #333;
+                                    padding: 20px;
+                                }
+                                .header {
+                                    background-color: #28A745; /* Green for success */
+                                    color: white;
+                                    padding: 15px;
+                                    border-radius: 5px;
+                                    margin-bottom: 20px;
+                                }
+                                .content {
+                                    background-color: #f8f9fa;
+                                    padding: 20px;
+                                    border-radius: 5px;
+                                    border: 1px solid #ddd;
+                                }
+                                .button {
+                                    background-color: #007bff;
+                                    color: white;
+                                    padding: 10px 20px;
+                                    text-decoration: none;
+                                    border-radius: 5px;
+                                    display: inline-block;
+                                    margin: 10px 0;
+                                }
+                                .footer {
+                                    margin-top: 20px;
+                                    font-size: 12px;
+                                    color: #666;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h2>✅ Build Success</h2>
+                            </div>
+                            <div class="content">
+                                <h3>Build Information:</h3>
+                                <ul>
+                                    <li><strong>Job Name:</strong> ${JOB_NAME}</li>
+                                    <li><strong>Build Number:</strong> #${BUILD_NUMBER}</li>
+                                    <li><strong>Status:</strong> SUCCESS</li>
+                                </ul>
+                                
+                                <p>No critical security vulnerabilities were found. You can review the details of the scan in the attached Trivy report.</p>
+                                
+                                <a href="${BUILD_URL}" class="button">View Build Details</a>
+                                
+                                <div class="footer">
+                                    <p>This is an automated message from Jenkins. Please do not reply to this email.</p>
+                                </div>
+                            </div>
+                        </body>
+                    </html>
+                """,
+                attachLog: true,
+                attachmentsPattern: 'report.txt'
+            )
+        }
     }
 }
