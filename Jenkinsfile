@@ -141,22 +141,29 @@ pipeline {
             }
         }
 
-        stage('Update Deployment') {
+        stage('Update Deployment Staging') {
             steps {
                 git branch: 'main', url: "https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git"
                 
                 script {
                     withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'TOKEN')]) {
                         sh """
-                            sed -i 's|image: .*|image: ${IMAGE_TAG}|' prod/deployement.yaml
+                            sed -i 's|image: .*|image: ${IMAGE_TAG}|' staging/deployement.yaml
                             git config user.name "${GIT_USER_NAME}"
                             git config user.email "${GIT_USER_EMAIL}"
-                            git add prod/deployement.yaml
+                            git add staging/deployement.yaml
                             git commit -m 'Update deployment image to ${IMAGE_TAG}'
                             git push https://\$TOKEN@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git
                         """
                     }
                 }
+            }
+        }
+
+        stage('Wait for Application') {
+            steps {
+                echo 'Waiting for 3 minutes to allow the application to fully start...'
+                sleep time: 3, unit: 'MINUTES'
             }
         }
 
@@ -169,6 +176,23 @@ pipeline {
                         -e BURP_REPORT_FILE_PATH=${WORKSPACE}/dastardly-report.xml \
                         public.ecr.aws/portswigger/dastardly:latest
                 '''
+            }
+        }
+
+        stage('Update Deployment') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'TOKEN')]) {
+                        sh """
+                            sed -i 's|image: .*|image: ${IMAGE_TAG}|' prod/deployement.yaml
+                            git config user.name "${GIT_USER_NAME}"
+                            git config user.email "${GIT_USER_EMAIL}"
+                            git add prod/deployement.yaml
+                            git commit -m 'Update deployment image to ${IMAGE_TAG}'
+                            git push https://\$TOKEN@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git
+                        """
+                    }
+                }
             }
         }
     }
