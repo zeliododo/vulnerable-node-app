@@ -77,7 +77,16 @@ pipeline {
 
         stage('Trivy Vulnerability Scan') {
             steps {
-                sh "trivy image --scanners vuln --severity HIGH,CRITICAL ${REGISTRY}:${BUILD_NUMBER} > report.txt"
+                script {
+                    sh "trivy image --scanners vuln --severity HIGH,CRITICAL ${REGISTRY}:${BUILD_NUMBER} > report.txt"
+                    
+                    def vulnerabilityCount = sh(script: "grep -E 'HIGH|CRITICAL' report.txt | wc -l", returnStdout: true).trim()
+                    
+                    if (vulnerabilityCount.toInteger() > 0) {
+                        echo "WARNING: Vulnerability of HIGH or CRITICAL severity where found!!"
+                        //error "Pipeline stopped due to HIGH or CRITICAL vulnerabilities found by Trivy!"
+                    }
+                }
             }
         }
 
@@ -148,18 +157,92 @@ pipeline {
         }
         failure {
             emailext(
-                subject: "${JOB_NAME}.${BUILD_NUMBER} FAILED",
-                mimeType: 'text/html',
                 to: "zelio@nexthope.net",
-                body: "${JOB_NAME}.${BUILD_NUMBER} FAILED"
+                subject: "<span style='color:green;'>${JOB_NAME} Build #${BUILD_NUMBER} - SUCCESS</span>",
+                mimeType: 'text/html',
+                body: """
+                    <html>
+                    <body>
+                        <h2 style="color: green;">SUCCESS</h2>
+                        <p>The Jenkins build <strong>${JOB_NAME} #${BUILD_NUMBER}</strong> was successful.</p>
+                        <p><a href="${BUILD_URL}">Click here</a> to view the job details in Jenkins Blue Ocean.</p>
+                        <p>For more information, please refer to the attached <strong>Trivy report</strong>.</p>
+                    </body>
+                    </html>
+                """,
+                attachLog: true,
+                attachmentsPattern: 'report.txt'
             )    
         }
         success {
             emailext(
-                subject: "${JOB_NAME}.${BUILD_NUMBER} PASSED",
-                mimeType: 'text/html',
                 to: "zelio@nexthope.net",
-                body: "${JOB_NAME}.${BUILD_NUMBER} PASSED"
+                subject: "${JOB_NAME} - Build #${BUILD_NUMBER} - Security Scan Results",
+                mimeType: 'text/html',
+                body: """
+                    <html>
+                        <head>
+                            <style>
+                                body { 
+                                    font-family: Arial, sans-serif;
+                                    line-height: 1.6;
+                                    color: #333;
+                                    padding: 20px;
+                                }
+                                .header {
+                                    background-color: #DC3545;
+                                    color: white;
+                                    padding: 15px;
+                                    border-radius: 5px;
+                                    margin-bottom: 20px;
+                                }
+                                .content {
+                                    background-color: #f8f9fa;
+                                    padding: 20px;
+                                    border-radius: 5px;
+                                    border: 1px solid #ddd;
+                                }
+                                .button {
+                                    background-color: #007bff;
+                                    color: white;
+                                    padding: 10px 20px;
+                                    text-decoration: none;
+                                    border-radius: 5px;
+                                    display: inline-block;
+                                    margin: 10px 0;
+                                }
+                                .footer {
+                                    margin-top: 20px;
+                                    font-size: 12px;
+                                    color: #666;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h2>⚠️ Build Failure Alert</h2>
+                            </div>
+                            <div class="content">
+                                <h3>Build Information:</h3>
+                                <ul>
+                                    <li><strong>Job Name:</strong> ${JOB_NAME}</li>
+                                    <li><strong>Build Number:</strong> #${BUILD_NUMBER}</li>
+                                    <li><strong>Status:</strong> FAILED</li>
+                                </ul>
+                                
+                                <p>Security vulnerabilities have been detected in your build. Please review the attached Trivy report for details.</p>
+                                
+                                <a href="${BUILD_URL}" class="button">View Build Details</a>
+                                
+                                <div class="footer">
+                                    <p>This is an automated message from Jenkins. Please do not reply to this email.</p>
+                                </div>
+                            </div>
+                        </body>
+                    </html>
+                """,
+                attachLog: true,
+                attachmentsPattern: 'report.txt'
             )
         }    
     }
