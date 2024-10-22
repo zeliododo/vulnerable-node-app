@@ -63,7 +63,7 @@ pipeline {
                     -s './'
                     -f 'ALL'
                     --prettyPrint
-                    --nvd-api-key ${NVD_API_KEY}''', odcInstallation: 'owasp_dpcheck'
+                    --nvdApiKey ${NVD_API_KEY}''', odcInstallation: 'owasp_dpcheck'
                 
                 dependencyCheckPublisher pattern: 'dependency-check-report.xml'
             }
