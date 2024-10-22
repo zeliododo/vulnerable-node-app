@@ -95,7 +95,7 @@ pipeline {
                             steps {
                                 script {
                                     def result = sh(
-                                        script: 'snyk code test --report --severity-threshold=critical',
+                                        script: 'snyk code test --report --severity-threshold=high',
                                         returnStatus: true
                                     )
                                     if (result == 1) {
