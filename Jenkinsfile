@@ -12,6 +12,7 @@ pipeline {
         ECR_LOGIN_COMMAND = 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URL}'
         GIT_REPO_NAME = "manifest-repo"
         GIT_USER_NAME = "zeliododo"
+        NVD_API_KEY = credentials('NVD_API_KEY')
     }
     
     stages {
@@ -61,7 +62,8 @@ pipeline {
                     -o './'
                     -s './'
                     -f 'ALL'
-                    --prettyPrint''', odcInstallation: 'owasp_dpcheck'
+                    --prettyPrint
+                    --nvd-api-key ${NVD_API_KEY}''', odcInstallation: 'owasp_dpcheck'
                 
                 dependencyCheckPublisher pattern: 'dependency-check-report.xml'
             }
@@ -139,7 +141,6 @@ pipeline {
 
         stage ("Docker run Dastardly from Burp Suite Scan") {
             steps {
-                cleanWs()
                 sh '''
                     docker run --user $(id -u) -v ${WORKSPACE}:${WORKSPACE}:rw \
                     -e BURP_START_URL=http://a7042e445de634b90894d0b193d8a1ee-1439731728.us-east-1.elb.amazonaws.com/ \
