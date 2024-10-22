@@ -69,6 +69,7 @@ pipeline {
                             withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
                                 sh '''
                                     npm install -g snyk
+                                    npm install snyk-to-html -g
                                     snyk auth $SNYK_TOKEN
                                 '''
                             }
