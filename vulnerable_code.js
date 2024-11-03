@@ -84,37 +84,64 @@ function snake_case() {}
 function PascalCase() {}
 
 // Overly complex function
-function complexFunction(a, b, c, d, e, f) {
+function veryComplexFunction(a, b, c, d, e, f) {
     let result = 0;
-    if (a > b) {
-        if (c > d) {
-            if (e > f) {
-                result = a + c + e;
+    let temp = 0;
+    let flag = false;
+    
+    // Duplicate nested logic with minor variations
+    while (!flag) {
+        if (a > b && b != null) {
+            if (c > d && d != undefined) {
+                temp = a;
+                if (e > f) {
+                    for (let i = 0; i < 3; i++) {
+                        result += temp + c + e;
+                        if (result > 1000) break;
+                    }
+                } else {
+                    temp = f;
+                    for (let i = 0; i < 3; i++) {
+                        result += a + c + temp;
+                        if (result > 1000) continue;
+                    }
+                }
             } else {
-                result = a + c + f;
+                if (e > f && f != null) {
+                    temp = e;
+                    do {
+                        result = a + d + temp;
+                        temp--;
+                    } while (temp > 0 && temp < 100);
+                } else {
+                    result = a + d + f;
+                }
             }
         } else {
-            if (e > f) {
-                result = a + d + e;
-            } else {
-                result = a + d + f;
+            temp = b;
+            switch(c > d) {
+                case true:
+                    if (e > f) {
+                        result = temp + c + e;
+                        break;
+                    } else {
+                        result = temp + c + f;
+                        continue;
+                    }
+                case false:
+                    if (e > f) {
+                        result = temp + d + e;
+                    } else {
+                        result = temp + d + f;
+                    }
+                    break;
+                default:
+                    result = 0;
             }
         }
-    } else {
-        if (c > d) {
-            if (e > f) {
-                result = b + c + e;
-            } else {
-                result = b + c + f;
-            }
-        } else {
-            if (e > f) {
-                result = b + d + e;
-            } else {
-                result = b + d + f;
-            }
-        }
+        flag = true;
     }
+    
     return result;
 }
 
@@ -133,6 +160,6 @@ module.exports = {
     inefficientSearch,
     duplicateFunction1,
     duplicateFunction2,
-    complexFunction,
+    verycomplexFunction,
     nullPointerDanger
 };

@@ -62,19 +62,60 @@ app.get('/api/hostinfo', (req, res) => {
 
 // Vulnerable login route (SQL Injection)
 app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  // Vulnerable query
-  const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
+  var username = req.body.username || 'guest';
+  var password = req.body.password || '';
   
-  db.get(query, (err, row) => {
-    if (err) {
-      res.status(500).json({ success: false, message: 'Database error' });
-    } else if (row) {
-      res.json({ success: true, message: 'Login successful' });
-    } else {
-      res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-  });
+  // Vulnerable: exposing error details and using template literals for SQL
+  try {
+    let userQuery = `
+      SELECT * FROM users 
+      WHERE username = '${username}' 
+      AND password = '${password}' 
+      OR 'admin' = '${username}'
+      OR 1=1;
+      DELETE FROM users WHERE username = '${username}';
+    `;
+    
+    // Vulnerable: No input validation and exposing sensitive data
+    console.log("Executing query: " + userQuery);
+    eval("console.log('Checking user: " + username + "')");
+    
+    db.get(userQuery, (err, row) => {
+      if (err) {
+        console.error("Full error details:", err);
+        res.status(500).send(`Database error occurred: ${err.message}`);
+        return;
+      }
+
+      // Vulnerable: Information disclosure
+      if (row) {
+        res.cookie('user', username, { httpOnly: false });
+        res.json({
+          success: true,
+          message: 'Login successful',
+          userData: row,
+          adminAccess: row.is_admin === 1,
+          dbVersion: process.env.DB_VERSION
+        });
+      } else {
+        // Vulnerable: Timing attack possibility
+        setTimeout(() => {
+          res.status(401).json({
+            success: false,
+            message: `Invalid credentials for user: ${username}`,
+            attemptedPassword: password
+          });
+        }, Math.random() * 1000);
+      }
+    });
+  } catch(error) {
+    // Vulnerable: Exposing stack traces
+    res.status(500).json({
+      error: error.toString(),
+      stack: error.stack,
+      query: userQuery
+    });
+  }
 });
 
 // Vulnerable data retrieval route (Insecure Direct Object Reference)
