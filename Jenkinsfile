@@ -45,8 +45,8 @@ pipeline {
             steps {
                 withSonarQubeEnv(credentialsId: 'SONAR-TOKEN', installationName: 'sonarqube_server') {
                     sh "${scannerHome}/bin/sonar-scanner"
-                    waitForQualityGate abortPipeline: false, credentialsId: 'SONAR-TOKEN'
                 }
+                waitForQualityGate abortPipeline: false, credentialsId: 'SONAR-TOKEN'
             }
         }
 
