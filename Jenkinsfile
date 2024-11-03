@@ -21,7 +21,8 @@ pipeline {
     }
     
     stages {
-        stage('Initialize') {
+
+        stage('Initialization') {
             steps {
                 cleanWs()
                 git branch: 'main', url: 'https://github.com/zeliododo/vulnerable-node-app.git'
@@ -32,81 +33,55 @@ pipeline {
             steps {
                 nodejs(nodeJSInstallationName: 'Nodejs') {
                     sh 'npm install'
+                    echo 'build and unit test'
                 }
             }
         }
 
-        stage('Static Code Analysis') {
-            stages {
-                stage('SonarQube Analysis') {
-                    environment {
-                        scannerHome = tool 'sonarqube_tool'
-                    }
-                    steps {
-                        withSonarQubeEnv(credentialsId: 'SONAR-TOKEN', installationName: 'sonarqube_server') {
-                            sh "${scannerHome}/bin/sonar-scanner"
-                        }
-                    }
+        stage('Code Quality Check') {
+            environment {
+                scannerHome = tool 'sonarqube_tool'
+            }
+            steps {
+                withSonarQubeEnv(credentialsId: 'SONAR-TOKEN', installationName: 'sonarqube_server') {
+                    sh "${scannerHome}/bin/sonar-scanner"
+                    waitForQualityGate abortPipeline: false, credentialsId: 'SONAR-TOKEN'
                 }
+            }
+        }
 
-                stage('Quality Gate') {
-                    steps {
-                        waitForQualityGate abortPipeline: false, credentialsId: 'SONAR-TOKEN'
+        stage('SCA & SAST') {
+            steps {
+                nodejs(nodeJSInstallationName: 'Nodejs') {
+                    withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
+                        script {
+                            sh '''
+                                npm install -g snyk snyk-to-html
+                                snyk auth $SNYK_TOKEN
+                                ls -al
+                            '''
+
+                            def scaResult = sh(
+                                script: 'snyk test --json | snyk-to-html -o sca-result.html',
+                                returnStatus: true
+                            )
+                            if (scaResult == 1) {
+                                echo "Critical vulnerabilities found in dependencies!"
+                            }
+                            
+                            def sastResult = sh(
+                                script: 'snyk code test --json | snyk-to-html -o sast-result.html',
+                                returnStatus: true
+                            )
+                            if (sastResult == 1) {
+                                echo "Critical vulnerabilities found in source code!"
+                            }
+                        }
                     }
                 }
             }
         }
         
-        stage('Security Scanning') {
-            stages {
-                stage('Snyk Setup') {
-                    steps {
-                        nodejs(nodeJSInstallationName: 'Nodejs') {
-                            withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
-                                sh '''
-                                    npm install -g snyk
-                                    npm install snyk-to-html -g
-                                    snyk auth $SNYK_TOKEN
-                                '''
-                            }
-                        }
-                    }
-                }
-
-                stage('Snyk Scans') {
-                    stages {
-                        stage('Dependencies (SCA)') {
-                            steps {
-                                script {
-                                    sh "ls -al"
-                                    def result = sh(
-                                        script: 'snyk test --json | snyk-to-html -o sca-result.html',
-                                        returnStatus: true
-                                    )
-                                    if (result == 1) {
-                                        echo "Critical vulnerabilities found in dependencies!"
-                                    }
-                                }
-                            }
-                        }   
-                        stage('Source Code (SAST)') {
-                            steps {
-                                script {
-                                    def result = sh(
-                                        script: 'snyk code test --json | snyk-to-html -o sast-result.html',
-                                        returnStatus: true
-                                    )
-                                    if (result == 1) {
-                                        echo "Critical vulnerabilities found in source code!"
-                                    }
-                                }
-                            }
-                        }
-                    }       
-                }
-            }
-        }
-
         stage('Container Operations') {
             stages {
                 stage('Build & Scan Image') {
@@ -137,7 +112,7 @@ pipeline {
             }
         }
 
-        stage('Update Deployment Staging') {
+        stage('Update Staging Manifest') {
             steps {
                 git branch: 'main', url: "https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git"
                 
@@ -156,27 +131,23 @@ pipeline {
             }
         }
 
-        stage('Wait for Application') {
-            steps {
-                echo 'Waiting for 3 minutes to allow the application to fully start...'
-                //sleep time: 2, unit: 'MINUTES'
-            }
-        }
-
         stage('Dynamic Security Testing') {
             steps {
-                /* sh '''
+                echo 'Waiting for 3 minutes to allow the application to fully start...'
+                sleep time: 2, unit: 'MINUTES'
+                
+                sh '''
                     docker pull public.ecr.aws/portswigger/dastardly:latest
                     docker run --user $(id -u) -v ${WORKSPACE}:${WORKSPACE}:rw \
                         -e BURP_START_URL=${APP_URL} \
                         -e BURP_REPORT_FILE_PATH=${WORKSPACE}/dastardly-report.xml \
                         public.ecr.aws/portswigger/dastardly:latest
-                ''' */
-                echo 'Dynamic Testing successfull'
+                '''
+                echo 'Dynamic Testing successful'
             }
         }
 
-        stage('Update Deployment') {
+        stage('Update Prod Manifest') {
             steps {
                 script {
                     withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'TOKEN')]) {
@@ -285,3 +256,4 @@ pipeline {
         }
     }
 }
+
