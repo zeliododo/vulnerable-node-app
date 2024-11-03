@@ -171,7 +171,7 @@ pipeline {
                 docker rmi ${IMAGE_TAG}
                 docker rmi ${REGISTRY}:latest
             '''
-            junit dastardly-report.xml
+            junit 'dastardly-report.xml'
         }
         
         success {
