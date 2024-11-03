@@ -136,13 +136,13 @@ pipeline {
                 echo 'Waiting for 3 minutes to allow the application to fully start...'
                 sleep time: 2, unit: 'MINUTES'
                 
-               /*  sh '''
+                sh '''
                     docker pull public.ecr.aws/portswigger/dastardly:latest
                     docker run --user $(id -u) -v ${WORKSPACE}:${WORKSPACE}:rw \
                         -e BURP_START_URL=${APP_URL} \
                         -e BURP_REPORT_FILE_PATH=${WORKSPACE}/dastardly-report.xml \
                         public.ecr.aws/portswigger/dastardly:latest
-                ''' */
+                ''' 
                 echo 'Dynamic Testing successful'
             }
         }
