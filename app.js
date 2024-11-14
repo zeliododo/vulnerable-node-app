@@ -6,12 +6,11 @@ const os = require('os');
 const app = express();
 const port = 3000;
 
-// Get host information
 const hostname = os.hostname();
 const networkInterfaces = os.networkInterfaces();
 let ipAddress = 'Unknown';
 
-// Try to find the IP address
+
 Object.keys(networkInterfaces).forEach((interfaceName) => {
   const interfaces = networkInterfaces[interfaceName];
   for (let i = 0; i < interfaces.length; i++) {
@@ -23,7 +22,7 @@ Object.keys(networkInterfaces).forEach((interfaceName) => {
   }
 });
 
-// Connect to SQLite database
+
 const db = new sqlite3.Database('./mydb.sqlite', (err) => {
   if (err) {
     console.error('Error opening database', err);
@@ -33,7 +32,7 @@ const db = new sqlite3.Database('./mydb.sqlite', (err) => {
   }
 });
 
-// Initialize database with sample data
+
 function initDb() {
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +42,6 @@ function initDb() {
     if (err) {
       console.error('Error creating table', err);
     } else {
-      // Insert sample data
       db.run(`INSERT OR IGNORE INTO users (id, username, password) VALUES 
         (1, 'admin', 'admin123'),
         (2, 'user', 'password123')`);
@@ -55,7 +53,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// Host info route
+
 app.get('/api/hostinfo', (req, res) => {
   res.json({ hostname, ipAddress });
 });
